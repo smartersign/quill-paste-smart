@@ -16,6 +16,7 @@ class QuillPasteSmart extends Clipboard {
     }
 
     onPaste(e) {
+        console.log('onPaste', e);
         e.preventDefault();
         const range = this.quill.getSelection();
 
