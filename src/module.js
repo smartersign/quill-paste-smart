@@ -19,7 +19,7 @@ class QuillPasteSmart extends Clipboard {
     }
 
     onPaste(e) {
-        console.log('onPaste!!', this.quill.getText().trim().length, e);
+        console.log('onPaste', this.quill.getText().trim().length, e);
         e.preventDefault();
 		let pastedInternally = false;
 		if (!this.quill.getText().trim())
