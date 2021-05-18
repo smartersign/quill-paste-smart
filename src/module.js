@@ -5,6 +5,9 @@ const Clipboard = Quill.import('modules/clipboard');
 const Delta = Quill.import('delta');
 
 class QuillPasteSmart extends Clipboard {
+
+	clipboardStyle;
+	
     constructor(quill, options) {
         super(quill, options);
 
@@ -16,8 +19,15 @@ class QuillPasteSmart extends Clipboard {
     }
 
     onPaste(e) {
-        console.log('onPaste', e);
+        console.log('onPaste!!', this.quill.getText().trim().length, e);
         e.preventDefault();
+		let pastedInternally = false;
+		if (!this.quill.getText().trim())
+		{
+			console.log("SETTING TEZT TO blank");
+			this.quill.setText(' ', Quill.sources.API);
+		}
+
         const range = this.quill.getSelection();
 
         const text = e.clipboardData.getData('text/plain');
@@ -57,14 +67,18 @@ class QuillPasteSmart extends Clipboard {
             if (typeof this.hooks?.afterSanitizeShadowDOM === 'function') {
                 DOMPurify.addHook('afterSanitizeShadowDOM', this.hooks.afterSanitizeShadowDOM);
             }
-
+			
+			console.log('paste text', text);
+			console.log('paste html', html);
+			
             if (this.substituteBlockElements !== false) {
                 html = this.substitute(html, DOMPurifyOptions);
                 content = html.innerHTML;
             } else {
                 content = DOMPurify.sanitize(html, DOMPurifyOptions);
             }
-
+			const regex = /ssTbId/g;
+			pastedInternally =  content.match(regex);
             delta = delta.concat(this.convert(content));
         } else if (
             DOMPurifyOptions.ALLOWED_TAGS.includes('a') &&
@@ -79,6 +93,37 @@ class QuillPasteSmart extends Clipboard {
         } else {
             delta = delta.insert(content);
         }
+
+		var that = this;
+	if(that.clipboardTextStyle!=undefined  && !pastedInternally)
+		{
+			let attrObj = {};
+			if(that.clipboardTextStyle['bold']!=undefined)
+			{
+				attrObj['bold'] = that.clipboardTextStyle['bold'];
+			}
+			if(that.clipboardTextStyle.fontSize!=undefined)
+			{
+				attrObj['font-size'] = that.clipboardTextStyle.fontSize;
+			}
+			if(that.clipboardTextStyle.fontFamily!=undefined)
+			{
+				attrObj['font-family'] = that.clipboardTextStyle.fontFamily;
+			}
+			if(that.clipboardTextStyle.color!=undefined)
+			{
+				attrObj['color'] = that.clipboardTextStyle.color;
+			}
+			if(that.clipboardTextStyle.align!=undefined)
+			{
+				console.log("clipboard... align set to ", that.clipboardTextStyle.align)
+				attrObj['text-align'] = that.clipboardTextStyle.align;
+			}
+			let ops = []
+			delta.ops.forEach(op => {
+			 op['attributes'] = attrObj;
+			})
+			}
 
         this.quill.updateContents(delta, Quill.sources.USER);
 
