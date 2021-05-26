@@ -24,7 +24,6 @@ class QuillPasteSmart extends Clipboard {
 		let pastedInternally = false;
 		if (!this.quill.getText().trim())
 		{
-			console.log("SETTING TEZT TO blank");
 			this.quill.setText(' ', Quill.sources.API);
 		}
 
@@ -38,6 +37,7 @@ class QuillPasteSmart extends Clipboard {
         const DOMPurifyOptions = this.getDOMPurifyOptions();
 
         let content = text;
+		let copiedInternally = false;
         if (html) {
             // add hooks to accessible setttings
             if (typeof this.hooks?.beforeSanitizeElements === 'function') {
@@ -68,18 +68,30 @@ class QuillPasteSmart extends Clipboard {
                 DOMPurify.addHook('afterSanitizeShadowDOM', this.hooks.afterSanitizeShadowDOM);
             }
 			
-			console.log('paste text', text);
-			console.log('paste html', html);
-			
-            if (this.substituteBlockElements !== false) {
+
+			const regex = /[ssTbId]/g;
+			copiedInternally = html.indexOf('ssTbId')!=-1;
+            if (this.substituteBlockElements !== false  ) {
+
                 html = this.substitute(html, DOMPurifyOptions);
                 content = html.innerHTML;
             } else {
                 content = DOMPurify.sanitize(html, DOMPurifyOptions);
             }
-			const regex = /ssTbId/g;
-			pastedInternally =  content.match(regex);
-            delta = delta.concat(this.convert(content));
+			
+			let convertedContent = this.convert(content);
+            delta = delta.concat(convertedContent);
+			delta.ops.forEach(op => {
+				if(op['insert']!=undefined)
+				{
+					console.log("insert ", op['insert'])
+					op['insert'] = op['insert'].replace('\n','');
+					if(op['insert']=='')
+					{
+						op['insert'] = '\n';
+					}
+				}
+			   })
         } else if (
             DOMPurifyOptions.ALLOWED_TAGS.includes('a') &&
             this.isURL(text) &&
@@ -93,9 +105,8 @@ class QuillPasteSmart extends Clipboard {
         } else {
             delta = delta.insert(content);
         }
-
 		var that = this;
-	if(that.clipboardTextStyle!=undefined  && !pastedInternally)
+	if(that.clipboardTextStyle!=undefined  && !copiedInternally)
 		{
 			let attrObj = {};
 			if(that.clipboardTextStyle['bold']!=undefined)
@@ -119,9 +130,9 @@ class QuillPasteSmart extends Clipboard {
 				console.log("clipboard... align set to ", that.clipboardTextStyle.align)
 				attrObj['text-align'] = that.clipboardTextStyle.align;
 			}
-			let ops = []
+			let ops = [];
 			delta.ops.forEach(op => {
-			 op['attributes'] = attrObj;
+			 if(op['insert']!=undefined) op['attributes'] = attrObj;
 			})
 			}
 
