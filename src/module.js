@@ -71,6 +71,7 @@ class QuillPasteSmart extends Clipboard {
 
 			const regex = /[ssTbId]/g;
 			copiedInternally = html.indexOf('ssTbId')!=-1;
+			
             if (this.substituteBlockElements !== false  ) {
 
                 html = this.substitute(html, DOMPurifyOptions);
@@ -84,7 +85,6 @@ class QuillPasteSmart extends Clipboard {
 			delta.ops.forEach(op => {
 				if(op['insert']!=undefined)
 				{
-					console.log("insert ", op['insert'])
 					op['insert'] = op['insert'].replace('\n','');
 					if(op['insert']=='')
 					{
