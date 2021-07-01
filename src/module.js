@@ -31,7 +31,8 @@ class QuillPasteSmart extends Clipboard {
 
         const text = e.clipboardData.getData('text/plain');
         let html = e.clipboardData.getData('text/html');
-
+		console.log('pasted', html);
+		
         let delta = new Delta().retain(range.index).delete(range.length);
 
         const DOMPurifyOptions = this.getDOMPurifyOptions();
@@ -79,8 +80,8 @@ class QuillPasteSmart extends Clipboard {
             } else {
                 content = DOMPurify.sanitize(html, DOMPurifyOptions);
             }
-			
 			let convertedContent = this.convert(content);
+			console.log('convertedContent', convertedContent)
             delta = delta.concat(convertedContent);
 			delta.ops.forEach(op => {
 				if(op['insert']!=undefined)
@@ -90,6 +91,10 @@ class QuillPasteSmart extends Clipboard {
 					{
 						op['insert'] = '\n';
 					}
+					// get rid of  background color
+					try{
+						op['attributes']['background'] = '';
+					} catch (e) {}
 				}
 			   })
         } else if (
@@ -135,7 +140,6 @@ class QuillPasteSmart extends Clipboard {
 			 if(op['insert']!=undefined) op['attributes'] = attrObj;
 			})
 			}
-
         this.quill.updateContents(delta, Quill.sources.USER);
 
         // move cursor
@@ -143,7 +147,8 @@ class QuillPasteSmart extends Clipboard {
         if (this.keepSelection) this.quill.setSelection(range.index, delta.length(), Quill.sources.SILENT);
         else this.quill.setSelection(range.index + delta.length(), Quill.sources.SILENT);
 
-        this.quill.scrollIntoView();
+		var that = this;
+        setTimeout( () => that.quill.scrollTop(), 100);
         DOMPurify.removeAllHooks();
     }
 
@@ -390,6 +395,7 @@ class QuillPasteSmart extends Clipboard {
 
         let block;
         const fixedDom = document.createElement('body');
+		
         walkTheDOM(html, (node, depth) => {
             if (depth === 1) {
                 if (node.tagName && blockElements.includes(node.tagName.toLowerCase())) {
