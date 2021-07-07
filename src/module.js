@@ -19,7 +19,6 @@ class QuillPasteSmart extends Clipboard {
     }
 
     onPaste(e) {
-        console.log('onPaste', this.quill.getText().trim().length, e);
         e.preventDefault();
 		let pastedInternally = false;
 		if (!this.quill.getText().trim())
@@ -31,8 +30,7 @@ class QuillPasteSmart extends Clipboard {
 
         const text = e.clipboardData.getData('text/plain');
         let html = e.clipboardData.getData('text/html');
-		console.log('pasted', html);
-		
+				
         let delta = new Delta().retain(range.index).delete(range.length);
 
         const DOMPurifyOptions = this.getDOMPurifyOptions();
@@ -81,7 +79,6 @@ class QuillPasteSmart extends Clipboard {
                 content = DOMPurify.sanitize(html, DOMPurifyOptions);
             }
 			let convertedContent = this.convert(content);
-			console.log('convertedContent', convertedContent)
             delta = delta.concat(convertedContent);
 			delta.ops.forEach(op => {
 				if(op['insert']!=undefined)
@@ -95,6 +92,11 @@ class QuillPasteSmart extends Clipboard {
 					try{
 						op['attributes']['background'] = '';
 					} catch (e) {}
+
+					try{
+						op['attributes']['font-family'].replace('\"','');
+					} catch (e) {}
+
 				}
 			   })
         } else if (
@@ -132,7 +134,6 @@ class QuillPasteSmart extends Clipboard {
 			}
 			if(that.clipboardTextStyle.align!=undefined)
 			{
-				console.log("clipboard... align set to ", that.clipboardTextStyle.align)
 				attrObj['text-align'] = that.clipboardTextStyle.align;
 			}
 			let ops = [];
