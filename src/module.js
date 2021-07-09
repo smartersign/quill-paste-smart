@@ -113,6 +113,7 @@ class QuillPasteSmart extends Clipboard {
             delta = delta.insert(content);
         }
 		var that = this;
+		console.log('copied internally...', copiedInternally)
 	if(that.clipboardTextStyle!=undefined  && !copiedInternally)
 		{
 			let attrObj = {};
