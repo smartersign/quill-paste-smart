@@ -113,7 +113,7 @@ class QuillPasteSmart extends Clipboard {
             delta = delta.insert(content);
         }
 		var that = this;
-		console.log('copied internally...', copiedInternally)
+		console.log('copied internally.......', copiedInternally)
 	if(that.clipboardTextStyle!=undefined  && !copiedInternally)
 		{
 			let attrObj = {};
@@ -150,7 +150,7 @@ class QuillPasteSmart extends Clipboard {
         else this.quill.setSelection(range.index + delta.length(), Quill.sources.SILENT);
 
 		var that = this;
-        setTimeout( () => that.quill.scrollTop(), 100);
+        //setTimeout( () => that.quill.scrollTop(), 100);
         DOMPurify.removeAllHooks();
     }
 
